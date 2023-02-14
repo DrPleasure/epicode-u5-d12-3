@@ -16,14 +16,14 @@ dotenv.config() // This command forces .env vars to be loaded into process.env. 
 
 const client = supertest(server)
 
-/* describe("Test APIs", () => {
+ describe("Test APIs", () => {
   it("Should test that GET /test endpoint returns 200 and a body containing a message", async () => {
     const response = await client.get("/test")
     expect(response.status).toBe(200)
     expect(response.body.message).toEqual("Test successfull")
   })
 })
- */
+ 
 
 const validProduct = {
   name: "A valid product",
@@ -37,10 +37,12 @@ const notValidProduct = {
 }
 
 beforeAll(async () => {
-  await mongoose.connect(process.env.MONGO_URL_TEST)
+   mongoose.connect(process.env.MONGO_URL_TEST)
   const product = new ProductsModel({ name: "test", description: "blalblabla", price: 20 })
   await product.save()
-})
+});
+
+
 // beforeAll is a Jest hook ran before all the tests, usually it is used to connect to the db and to do some initial setup (like inserting some mock data in the db)
 
 afterAll(async () => {
@@ -49,22 +51,111 @@ afterAll(async () => {
 })
 // afterAll hook could be used to clean up the situation (close the connection to Mongo gently and clean up db/collections)
 
-describe("Test APIs", () => {
-  it("Should test that the env vars are set correctly", () => {
-    expect(process.env.MONGO_URL_TEST).toBeDefined()
+it("GET /products should return a success status code and a body", async () => {
+  const response = await client.get("/products").expect(200)
+  expect(response.body).toBeDefined()
+  })
+  
+  it("POST /products should return a valid _id and 201 in case of a valid product, 400 if not", async () => {
+  const validProduct = {
+  name: "Test Product",
+  description: "A test product",
+  price: 100,
+  }
+  const invalidProduct = {
+    name: "Test Product",
+    price: 100,
+  }
+  
+  const response1 = await client.post("/products").send(validProduct).expect(201)
+  const response2 = await client.post("/products").send(invalidProduct).expect(400)
+  
+  expect(response1.body._id).toBeDefined()  
+
   })
 
-  it("Should test that POST /products returns a valid _id and 201", async () => {
-    const response = await client.post("/products").send(validProduct).expect(201)
-    expect(response.body._id).toBeDefined()
-  })
+//   it("GET /products/:id should return the correct product with a valid id and 404 with a non-existing id", async () => {
+//     const validProduct = {
+//     name: "Test Product",
+//     description: "A test product",
+//     price: 100,
+//     }
+//     const product = await new ProductModel(validProduct).save()
+// const productId = product._id
 
-  it("Should test that GET /products returns a success status and a body", async () => {
-    const response = await client.get("/products").expect(200)
-    console.log(response.body)
-  })
+// const response1 = await client.get(`/products/${productId}`).expect(200)
+// expect(response1.body._id).toEqual(productId.toString())
 
-  it("Should test that POST /products with a not valid product returns a 400", async () => {
-    await client.post("/products").send(notValidProduct).expect(400)
-  })
-})
+// const response2 = await client.get("/products/63eba6f9542f7f50e09395db").expect(404)
+// })
+
+
+// it("DELETE /products/:id should return 204 with a valid id and 404 with a non-existing id", async () => {
+//   const validProduct = {
+//   name: "Test Product",
+//   description: "A test product",
+//   price: 100,
+//   }
+//   const product = await new ProductModel(validProduct).save()
+// const productId = product._id
+
+// const response1 = await client.delete(`/products/${productId}`).expect(204)
+// const response2 = await client.delete("/products/63eba6f9542f7f50e09395db").expect(404)
+// })
+
+// it("PUT /products/:id should update a product with valid data and return 404 with a non-existing id", async () => {
+//   const validProduct = {
+//   name: "Test Product",
+//   description: "A test product",
+//   price: 100,
+//   }
+//   const product = await new ProductModel(validProduct).save()
+// const productId = product._id
+
+// const updatedProduct = {
+//   name: "Updated Product",
+//   description: "An updated test product",
+//   price: 200,
+// }
+
+// const response1 = await client.put(`/products/${productId}`).send(updatedProduct).expect(200)
+
+// expect(response1.body.name).toBe(updatedProduct.name)
+// expect(typeof response1.body.name).toBe("string")
+
+// const response2 = await client.put("/products/63eba6f9542f7f50e09395db").send(updatedProduct).expect(404)
+// })
+
+
+test('Jest can use import syntax with NODE_OPTIONS', () => {
+  // Ensure the NODE_OPTIONS environment variable is set to enable import syntax
+  expect(process.env.NODE_OPTIONS).toContain('--experimental-vm-modules');
+});
+
+
+
+
+describe('API Endpoints', () => {
+  it('GET /test endpoint should return 200 and a message', async () => {
+    const response = await client.get('/test');
+    expect(response.status).toBe(200);
+    expect(response.body.message).toEqual('Test successful');
+  });
+
+  it('GET /products endpoint should return 200 and a body', async () => {
+    const response = await client.get('/products');
+    expect(response.status).toBe(200);
+    expect(response.body).toBeDefined();
+  });
+
+  it('POST /products with a valid product should return 201 and a valid _id', async () => {
+    const validProduct = {
+      name: 'Test Product',
+      description: 'A test product',
+      price: 100,
+    };
+    const response = await client.post('/products').send(validProduct);
+    expect(response.status).toBe(201);
+    expect(response.body._id).toBeDefined();
+  });
+});

@@ -22,4 +22,32 @@ productsRouter.post("/", async (req, res, next) => {
   }
 })
 
+productsRouter.put("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { name } = req.body
+    const updatedProduct = await ProductsModel.findByIdAndUpdate(id, { name }, { new: true })
+    if (!updatedProduct) {
+      return res.sendStatus(404)
+    }
+    res.send(updatedProduct)
+  } catch (error) {
+    next(error)
+  }
+})
+
+productsRouter.delete("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const deletedProduct = await ProductsModel.findByIdAndDelete(id)
+    if (!deletedProduct) {
+      return res.sendStatus(404)
+    }
+    res.sendStatus(204)
+  } catch (error) {
+    next(error)
+  }
+})
+
+
 export default productsRouter
