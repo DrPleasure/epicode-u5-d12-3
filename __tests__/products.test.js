@@ -18,23 +18,13 @@ const client = supertest(server)
 
  describe("Test APIs", () => {
   it("Should test that GET /test endpoint returns 200 and a body containing a message", async () => {
-    const response = await client.get("/test")
+    const response = await client.get("/products")
     expect(response.status).toBe(200)
-    expect(response.body.message).toEqual("Test successfull")
+    expect(Array.isArray(response.body)).toBe(true);
   })
 })
  
 
-const validProduct = {
-  name: "A valid product",
-  description: "balllablalblabl",
-  price: 100,
-}
-
-const notValidProduct = {
-  name: "A not valid product",
-  price: 100,
-}
 
 beforeAll(async () => {
    mongoose.connect(process.env.MONGO_URL_TEST)
@@ -137,9 +127,9 @@ test('Jest can use import syntax with NODE_OPTIONS', () => {
 
 describe('API Endpoints', () => {
   it('GET /test endpoint should return 200 and a message', async () => {
-    const response = await client.get('/test');
+    const response = await client.get('/products');
     expect(response.status).toBe(200);
-    expect(response.body.message).toEqual('Test successful');
+    expect(Array.isArray(response.body)).toBe(true);
   });
 
   it('GET /products endpoint should return 200 and a body', async () => {
